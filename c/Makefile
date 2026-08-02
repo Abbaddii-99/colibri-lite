@@ -26,9 +26,13 @@ endif
 ifeq ($(OS),Windows_NT)
   MKDIR  := if not exist $(OBJDIR) mkdir $(OBJDIR)
   RM     := del /F /Q
+  CFLAGS += -D_WIN32 -DWIN32 -D_FILE_OFFSET_BITS=64 -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE
+  LDFLAGS += -fopenmp -static
 else
   MKDIR  := mkdir -p $(OBJDIR)
   RM     := rm -rf
+  CFLAGS += -D_FILE_OFFSET_BITS=64 -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE
+  LDFLAGS += -fopenmp
 endif
 
 .PHONY: all clean test bench cuda
