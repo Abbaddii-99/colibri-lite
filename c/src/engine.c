@@ -599,14 +599,23 @@ int main(int argc, char **argv){
 #endif
     }
     const char *snap=getenv("SNAP");
-    if(!snap || (argc>1 && !strcmp(argv[1],"--help"))){
+    if(argc>1 && !strcmp(argv[1],"--help")){   /* explicit --help → success */
         fprintf(stderr,"Colibri-Lite — modular inference engine\n");
         fprintf(stderr,"Usage: SNAP=<model-dir> %s [cache=%d] [ebits=%d] [dbits=%d]\n", argv[0], 64, 8, 8);
         fprintf(stderr,"Env vars: SNAP, TEMP, NUCLEUS, TOPK, TOPP, DRAFT, SPEC, LOOKA, PILOT, PIPE,\n");
         fprintf(stderr,"          DIRECT, DROP, IDOT, ABSORB, SEED, NGEN, PROMPT, PIN, REPIN,\n");
         fprintf(stderr,"          CTX (max ctx), KV_SLOTS (1-16), SERVE (server mode), KVSAVE,\n");
         fprintf(stderr,"          THINK, CHAT_TEMPLATE, CUDA_DEVICES (comma-sep, e.g. \"0,1\")\n");
-        if(!snap) return 1; else return 0;
+        return 0;
+    }
+    if(!snap){
+        fprintf(stderr,"Colibri-Lite — modular inference engine\n");
+        fprintf(stderr,"Usage: SNAP=<model-dir> %s [cache=%d] [ebits=%d] [dbits=%d]\n", argv[0], 64, 8, 8);
+        fprintf(stderr,"Env vars: SNAP, TEMP, NUCLEUS, TOPK, TOPP, DRAFT, SPEC, LOOKA, PILOT, PIPE,\n");
+        fprintf(stderr,"          DIRECT, DROP, IDOT, ABSORB, SEED, NGEN, PROMPT, PIN, REPIN,\n");
+        fprintf(stderr,"          CTX (max ctx), KV_SLOTS (1-16), SERVE (server mode), KVSAVE,\n");
+        fprintf(stderr,"          THINK, CHAT_TEMPLATE, CUDA_DEVICES (comma-sep, e.g. \"0,1\")\n");
+        return 1;
     }
     g_nopack  = getenv("NOPACK")?1:0;
     g_drop    = getenv("DROP")?1:0;

@@ -1,0 +1,5 @@
+obj/
+glm
+glm.exe
+*.o
+*.d

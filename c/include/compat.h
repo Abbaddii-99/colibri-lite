@@ -179,15 +179,24 @@ static inline void compat_meminfo(double *total_gb, double *avail_gb){
 #define strdup _strdup
 #endif
 
-/* --- clock_gettime / CLOCK_MONOTONIC shim for Windows --- */
+/* --- clock_gettime / CLOCK_MONOTONIC shim for Windows ---
+ * mingw-w64's sys/types.h already defines struct timespec (guarded by
+ * _TIMESPEC_DEFINED), and time.h only pulls pthread_time.h (real
+ * clock_gettime in winpthreads) when _POSIX_C_SOURCE>2 — which the Makefile
+ * sets. If CLOCK_MONOTONIC is still undefined here, provide our own. */
 #if defined(_WIN32) && !defined(CLOCK_MONOTONIC)
 #define CLOCK_MONOTONIC 1
+#ifndef _TIMESPEC_DEFINED
+#define _TIMESPEC_DEFINED
 struct timespec { time_t tv_sec; long tv_nsec; };
+#endif
 static inline int clock_gettime(int clk_id, struct timespec *ts){
     (void)clk_id;
     FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
-    ULARGE_INTEGER uli = { ft.dwLowDateTime, ft.dwHighDateTime };
+    ULARGE_INTEGER uli;
+    uli.LowPart  = ft.dwLowDateTime;
+    uli.HighPart = ft.dwHighDateTime;
     unsigned long long t = uli.QuadPart;
     t = (t - 116444736000000000ULL) / 10; /* 100ns -> ns since Unix epoch */
     ts->tv_sec = (long)(t / 1000000000ULL);
