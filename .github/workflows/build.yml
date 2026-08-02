@@ -23,19 +23,12 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y build-essential libomp-dev
       shell: bash
 
-    - name: Install dependencies (Windows)
+    - name: Install mingw (Windows)
       if: runner.os == 'Windows'
       run: |
         choco install mingw --version 14.2.0 --no-progress -y
-        $mingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\x86_64-14.2.0-release-win32-seh-ucrt-rt_v12-rev0\bin"
-        if (-not (Test-Path $mingwPath)) {
-          $mingwPath = "C:\ProgramData\chocolatey\lib\mingw64\tools\install\mingw64\bin"
-        }
-        if (-not (Test-Path $mingwPath)) {
-          $mingwPath = (Get-Command gcc -ErrorAction SilentlyContinue).Source | Split-Path -Parent
-        }
-        echo "$mingwPath" >> $env:GITHUB_PATH
-      shell: bash
+        refreshenv
+      shell: powershell
 
     - name: Build modular engine
       run: |
