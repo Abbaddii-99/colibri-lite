@@ -26,12 +26,19 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         choco install mingw --version 14.2.0 --no-progress -y
-        echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\x86_64-14.2.0-release-win32-seh-ucrt-rt_v12-rev0\bin" >> $env:GITHUB_PATH
+        $mingwPath = "C:\ProgramData\chocolatey\lib\mingw\tools\install\x86_64-14.2.0-release-win32-seh-ucrt-rt_v12-rev0\bin"
+        if (-not (Test-Path $mingwPath)) {
+          $mingwPath = "C:\ProgramData\chocolatey\lib\mingw64\tools\install\mingw64\bin"
+        }
+        if (-not (Test-Path $mingwPath)) {
+          $mingwPath = (Get-Command gcc -ErrorAction SilentlyContinue).Source | Split-Path -Parent
+        }
+        echo "$mingwPath" >> $env:GITHUB_PATH
 
     - name: Build modular engine
       run: |
         cd c
-        make clean
+        if (Test-Path obj) { make clean }
         make -j$(nproc 2>/dev/null || echo 4)
       env:
         CC: gcc
@@ -48,7 +55,7 @@ jobs:
 
     - name: Compile original monolithic glm.c
       run: |
-        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 c/original/glm.c -o c/glm_orig -lm -lpthread
+        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 -Ic/include -fopenmp c/original/glm.c -o c/glm_orig -lm -lpthread
 
     - name: Run regression test (oracle)
       run: |
