@@ -174,6 +174,28 @@ static inline void compat_meminfo(double *total_gb, double *avail_gb){
 #define usleep(us) Sleep((DWORD)((us+999)/1000))
 #endif
 
+/* --- strdup -> _strdup (Windows) --- */
+#ifndef strdup
+#define strdup _strdup
+#endif
+
+/* --- clock_gettime / CLOCK_MONOTONIC shim for Windows --- */
+#if defined(_WIN32) && !defined(CLOCK_MONOTONIC)
+#define CLOCK_MONOTONIC 1
+struct timespec { time_t tv_sec; long tv_nsec; };
+static inline int clock_gettime(int clk_id, struct timespec *ts){
+    (void)clk_id;
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    ULARGE_INTEGER uli = { ft.dwLowDateTime, ft.dwHighDateTime };
+    unsigned long long t = uli.QuadPart;
+    t = (t - 116444736000000000ULL) / 10; /* 100ns -> ns since Unix epoch */
+    ts->tv_sec = (long)(t / 1000000000ULL);
+    ts->tv_nsec = (long)(t % 1000000000ULL);
+    return 0;
+}
+#endif
+
 /* --- rename -> MoveFileEx (CRT rename EEXIST se destinazione esiste) ---
  * stats_dump_q chiama rename(tmp, path) OGNI turno di serve: dopo il primo
  * write il file esiste gia', e CRT rename fallisce silenziosamente,
