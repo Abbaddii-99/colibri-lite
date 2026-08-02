@@ -1,0 +1,57 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install -y build-essential libomp-dev
+
+    - name: Install dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install mingw --version 14.2.0 --no-progress -y
+        echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\x86_64-14.2.0-release-win32-seh-ucrt-rt_v12-rev0\bin" >> $env:GITHUB_PATH
+
+    - name: Build modular engine
+      run: |
+        cd c
+        make clean
+        make -j$(nproc 2>/dev/null || echo 4)
+      env:
+        CC: gcc
+
+    - name: Test help
+      run: |
+        cd c
+        ./glm --help
+
+    - name: Smoke test (no model required)
+      run: |
+        cd c/tests
+        python smoke_test.py
+
+    - name: Compile original monolithic glm.c
+      run: |
+        cd colibri-main/c
+        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 glm.c -o glm -lm -lpthread
+
+    - name: Run regression test (oracle)
+      run: |
+        cd c
+        python tests/regression_test.py
