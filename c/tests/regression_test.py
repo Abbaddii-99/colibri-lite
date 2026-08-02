@@ -70,10 +70,14 @@ def compare_score(score_file, config_name="default", extra_env=None):
     lines2 = [l.strip() for l in out2.splitlines() if l.strip() and l.strip()[0] in "-0123456789" and " " in l]
 
     if not lines1 or not lines2:
-        raise AssertionError(f"No score output: mod={lines1}, orig={lines2}")
+        raise AssertionError(
+            f"No score output: mod={lines1}, orig={lines2}\n"
+            f"  mod rc={r1.returncode} stderr={out1[-500:]}\n"
+            f"  orig rc={r2.returncode} stderr={out2[-500:]}"
+        )
 
     if lines1[0] != lines2[0]:
-        raise AssertionError(f"Mismatch: mod={lines1[0]} orig={lines2[0]}")
+        raise AssertionError(f"Mismatch: mod={lines1[0]} orig={lines2[0]}\n  mod rc={r1.returncode} stderr={out1[-500:]}\n  orig rc={r2.returncode} stderr={out2[-500:]}")
     print(f"  PASS  {score_file} ({config_name}): {lines1[0]}")
 
 def test_glm_score_idot0():
