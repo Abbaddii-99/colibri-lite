@@ -55,7 +55,7 @@ jobs:
 
     - name: Compile original monolithic glm.c
       run: |
-        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 -Ic/include -fopenmp c/original/glm.c -o c/glm_orig -lm -lpthread
+        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 -Ic/original/include -fopenmp c/original/glm.c -o c/glm_orig -lm -lpthread
 
     - name: Run regression test (oracle)
       run: |
