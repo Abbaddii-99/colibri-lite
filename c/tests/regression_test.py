@@ -20,6 +20,11 @@ if not os.path.exists(ORIG):
 if not os.path.exists(ORIG):
     ORIG = os.path.join(ORIG_DIR, "glm")
 
+# CI location (built by workflow)
+CI_ORIG = os.path.join(HERE, "..", "glm_orig.exe" if platform.system() == "Windows" else "glm_orig")
+if not os.path.exists(ORIG) and os.path.exists(CI_ORIG):
+    ORIG = CI_ORIG
+
 if platform.system() == "Windows":
     if not MODULAR.endswith(".exe"):
         MODULAR += ".exe"

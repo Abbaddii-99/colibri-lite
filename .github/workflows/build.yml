@@ -48,8 +48,7 @@ jobs:
 
     - name: Compile original monolithic glm.c
       run: |
-        cd colibri-main/c
-        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 glm.c -o glm -lm -lpthread
+        gcc -std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-unknown-pragmas -D_FILE_OFFSET_BITS=64 c/original/glm.c -o c/glm_orig -lm -lpthread
 
     - name: Run regression test (oracle)
       run: |
